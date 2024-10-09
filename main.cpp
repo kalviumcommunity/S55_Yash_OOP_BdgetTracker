@@ -10,14 +10,17 @@ private:
     string source;
 
 public:
-    Income(double amt, string src) : amount(amt), source(src) {}
+    Income(double amount, string source) {
+        this->amount = amount;
+        this->source = source;
+    }
 
     double getAmount() const {
-        return amount;
+        return this->amount;
     }
 
     string getSource() const {
-        return source;
+        return this->source;
     }
 };
 
@@ -27,14 +30,17 @@ private:
     string category;
 
 public:
-    Expense(double amt, string cat) : amount(amt), category(cat) {}
+    Expense(double amount, string category) {
+        this->amount = amount;
+        this->category = category;
+    }
 
     double getAmount() const {
-        return amount;
+        return this->amount;
     }
 
     string getCategory() const {
-        return category;
+        return this->category;
     }
 };
 
@@ -45,12 +51,12 @@ private:
 
 public:
     void addIncome(double amount, string source) {
-        incomes.emplace_back(amount, source);
+        this->incomes.emplace_back(amount, source);
         cout << "Income added: " << amount << " from " << source << endl;
     }
 
     void addExpense(double amount, string category) {
-        expenses.emplace_back(amount, category);
+        this->expenses.emplace_back(amount, category);
         cout << "Expense added: " << amount << " for " << category << endl;
     }
 
