@@ -10,6 +10,8 @@ private:
     string source;
 
 public:
+    Income() : amount(0), source("") {}
+
     Income(double amount, string source) {
         this->amount = amount;
         this->source = source;
@@ -30,6 +32,8 @@ private:
     string category;
 
 public:
+    Expense() : amount(0), category("") {}
+
     Expense(double amount, string category) {
         this->amount = amount;
         this->category = category;
@@ -80,46 +84,45 @@ public:
 
 int main() {
     BudgetTracker tracker;
-    int choice;
-    double amount;
-    string sourceOrCategory;
 
-    while (true) {
-        cout << "\n--- Budget Tracker ---" << endl;
-        cout << "1. Add Income" << endl;
-        cout << "2. Add Expense" << endl;
-        cout << "3. View Summary" << endl;
-        cout << "4. Exit" << endl;
-        cout << "Choose an option: ";
-        cin >> choice;
+    int incomeCount;
+    cout << "How many incomes would you like to enter? ";
+    cin >> incomeCount;
+    Income* incomes = new Income[incomeCount];
 
-        switch (choice) {
-            case 1:
-                cout << "Enter income amount: ";
-                cin >> amount;
-                cout << "Enter income source: ";
-                cin >> ws;
-                getline(cin, sourceOrCategory);
-                tracker.addIncome(amount, sourceOrCategory);
-                break;
-            case 2:
-                cout << "Enter expense amount: ";
-                cin >> amount;
-                cout << "Enter expense category: ";
-                cin >> ws;
-                getline(cin, sourceOrCategory);
-                tracker.addExpense(amount, sourceOrCategory);
-                break;
-            case 3:
-                tracker.viewSummary();
-                break;
-            case 4:
-                cout << "Exiting the program." << endl;
-                return 0;
-            default:
-                cout << "Invalid option. Please try again." << endl;
-        }
+    for (int i = 0; i < incomeCount; i++) {
+        double amount;
+        string source;
+        cout << "Enter income amount for income " << (i + 1) << ": ";
+        cin >> amount;
+        cout << "Enter income source for income " << (i + 1) << ": ";
+        cin >> ws;
+        getline(cin, source);
+        incomes[i] = Income(amount, source);
+        tracker.addIncome(incomes[i].getAmount(), incomes[i].getSource());
     }
+
+    int expenseCount;
+    cout << "How many expenses would you like to enter? ";
+    cin >> expenseCount;
+    Expense* expenses = new Expense[expenseCount];
+
+    for (int i = 0; i < expenseCount; i++) {
+        double amount;
+        string category;
+        cout << "Enter expense amount for expense " << (i + 1) << ": ";
+        cin >> amount;
+        cout << "Enter expense category for expense " << (i + 1) << ": ";
+        cin >> ws;
+        getline(cin, category);
+        expenses[i] = Expense(amount, category);
+        tracker.addExpense(expenses[i].getAmount(), expenses[i].getCategory());
+    }
+
+    tracker.viewSummary();
+
+    delete[] incomes;
+    delete[] expenses;
 
     return 0;
 }
