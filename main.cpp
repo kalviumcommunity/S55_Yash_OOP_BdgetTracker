@@ -8,13 +8,15 @@ class Income {
 private:
     double amount;
     string source;
+    static int totalIncomes; // Static variable to keep track of total income entries
 
 public:
-    Income() : amount(0), source("") {}
+    Income() : amount(0), source("") {
+        totalIncomes++; // Increment total incomes when a new Income object is created
+    }
 
-    Income(double amount, string source) {
-        this->amount = amount;
-        this->source = source;
+    Income(double amount, string source) : amount(amount), source(source) {
+        totalIncomes++;
     }
 
     double getAmount() const {
@@ -24,19 +26,27 @@ public:
     string getSource() const {
         return this->source;
     }
+
+    static int getTotalIncomes() { // Static function to get the total number of income entries
+        return totalIncomes;
+    }
 };
+
+int Income::totalIncomes = 0; // Initialize static variable outside the class
 
 class Expense {
 private:
     double amount;
     string category;
+    static int totalExpenses; // Static variable to keep track of total expense entries
 
 public:
-    Expense() : amount(0), category("") {}
+    Expense() : amount(0), category("") {
+        totalExpenses++; // Increment total expenses when a new Expense object is created
+    }
 
-    Expense(double amount, string category) {
-        this->amount = amount;
-        this->category = category;
+    Expense(double amount, string category) : amount(amount), category(category) {
+        totalExpenses++;
     }
 
     double getAmount() const {
@@ -46,7 +56,13 @@ public:
     string getCategory() const {
         return this->category;
     }
+
+    static int getTotalExpenses() { // Static function to get the total number of expense entries
+        return totalExpenses;
+    }
 };
+
+int Expense::totalExpenses = 0; // Initialize static variable outside the class
 
 class BudgetTracker {
 private:
@@ -81,6 +97,8 @@ public:
         cout << "Total Income: " << totalIncome << endl;
         cout << "Total Expenses: " << totalExpenses << endl;
         cout << "Remaining Balance: " << (totalIncome - totalExpenses) << endl;
+        cout << "Total Incomes Recorded: " << Income::getTotalIncomes() << endl; // Display total incomes
+        cout << "Total Expenses Recorded: " << Expense::getTotalExpenses() << endl; // Display total expenses
     }
 
     ~BudgetTracker() {
