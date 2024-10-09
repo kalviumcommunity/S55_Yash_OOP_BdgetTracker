@@ -50,29 +50,31 @@ public:
 
 class BudgetTracker {
 private:
-    vector<Income> incomes;
-    vector<Expense> expenses;
+    vector<Income*> incomes;
+    vector<Expense*> expenses;
 
 public:
     void addIncome(double amount, string source) {
-        this->incomes.emplace_back(amount, source);
+        Income* income = new Income(amount, source);
+        incomes.emplace_back(income);
         cout << "Income added: " << amount << " from " << source << endl;
     }
 
     void addExpense(double amount, string category) {
-        this->expenses.emplace_back(amount, category);
+        Expense* expense = new Expense(amount, category);
+        expenses.emplace_back(expense);
         cout << "Expense added: " << amount << " for " << category << endl;
     }
 
     void viewSummary() {
         double totalIncome = 0.0, totalExpenses = 0.0;
 
-        for (const auto &income : incomes) {
-            totalIncome += income.getAmount();
+        for (const auto& income : incomes) {
+            totalIncome += income->getAmount();
         }
 
-        for (const auto &expense : expenses) {
-            totalExpenses += expense.getAmount();
+        for (const auto& expense : expenses) {
+            totalExpenses += expense->getAmount();
         }
 
         cout << "\n--- Financial Summary ---" << endl;
@@ -80,15 +82,23 @@ public:
         cout << "Total Expenses: " << totalExpenses << endl;
         cout << "Remaining Balance: " << (totalIncome - totalExpenses) << endl;
     }
+
+    ~BudgetTracker() {
+        for (auto income : incomes) {
+            delete income;
+        }
+        for (auto expense : expenses) {
+            delete expense;
+        }
+    }
 };
 
 int main() {
-    BudgetTracker tracker;
+    BudgetTracker* tracker = new BudgetTracker();
 
     int incomeCount;
     cout << "How many incomes would you like to enter? ";
     cin >> incomeCount;
-    Income* incomes = new Income[incomeCount];
 
     for (int i = 0; i < incomeCount; i++) {
         double amount;
@@ -98,14 +108,12 @@ int main() {
         cout << "Enter income source for income " << (i + 1) << ": ";
         cin >> ws;
         getline(cin, source);
-        incomes[i] = Income(amount, source);
-        tracker.addIncome(incomes[i].getAmount(), incomes[i].getSource());
+        tracker->addIncome(amount, source);
     }
 
     int expenseCount;
     cout << "How many expenses would you like to enter? ";
     cin >> expenseCount;
-    Expense* expenses = new Expense[expenseCount];
 
     for (int i = 0; i < expenseCount; i++) {
         double amount;
@@ -115,14 +123,12 @@ int main() {
         cout << "Enter expense category for expense " << (i + 1) << ": ";
         cin >> ws;
         getline(cin, category);
-        expenses[i] = Expense(amount, category);
-        tracker.addExpense(expenses[i].getAmount(), expenses[i].getCategory());
+        tracker->addExpense(amount, category);
     }
 
-    tracker.viewSummary();
+    tracker->viewSummary();
 
-    delete[] incomes;
-    delete[] expenses;
+    delete tracker;
 
     return 0;
 }
