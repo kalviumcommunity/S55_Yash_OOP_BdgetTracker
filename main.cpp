@@ -27,6 +27,14 @@ public:
         return this->source;
     }
 
+    void setAmount(double amount) {
+        this->amount = amount;
+    }
+
+    void setSource(string source) {
+        this->source = source;
+    }
+
     static int getTotalIncomes() {
         return totalIncomes;
     }
@@ -55,6 +63,14 @@ public:
 
     string getCategory() const {
         return this->category;
+    }
+
+    void setAmount(double amount) {
+        this->amount = amount;
+    }
+
+    void setCategory(string category) {
+        this->category = category;
     }
 
     static int getTotalExpenses() {
