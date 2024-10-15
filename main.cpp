@@ -13,10 +13,16 @@ private:
 public:
     Income() : amount(0), source("") {
         totalIncomes++;
+        cout << "Default Constructor for Income called" << endl;
     }
 
     Income(double amount, string source) : amount(amount), source(source) {
         totalIncomes++;
+        cout << "Parameterized Constructor for Income called" << endl;
+    }
+
+    ~Income() {
+        cout << "Destructor for Income called. Source: " << source << endl;
     }
 
     double getAmount() const {
@@ -51,10 +57,16 @@ private:
 public:
     Expense() : amount(0), category("") {
         totalExpenses++;
+        cout << "Default Constructor for Expense called" << endl;
     }
 
     Expense(double amount, string category) : amount(amount), category(category) {
         totalExpenses++;
+        cout << "Parameterized Constructor for Expense called" << endl;
+    }
+
+    ~Expense() {
+        cout << "Destructor for Expense called. Category: " << category << endl;
     }
 
     double getAmount() const {
@@ -86,6 +98,10 @@ private:
     vector<Expense*> expenses;
 
 public:
+    BudgetTracker() {
+        cout << "BudgetTracker created" << endl;
+    }
+
     void addIncome(double amount, string source) {
         Income* income = new Income(amount, source);
         incomes.emplace_back(income);
@@ -124,6 +140,7 @@ public:
         for (auto expense : expenses) {
             delete expense;
         }
+        cout << "BudgetTracker destroyed" << endl;
     }
 };
 
@@ -166,4 +183,3 @@ int main() {
 
     return 0;
 }
-
