@@ -20,11 +20,11 @@ public:
     }
 
     double getAmount() const {
-        return this->amount;
+        return amount;
     }
 
     string getSource() const {
-        return this->source;
+        return source;
     }
 
     void setAmount(double amount) {
@@ -58,11 +58,11 @@ public:
     }
 
     double getAmount() const {
-        return this->amount;
+        return amount;
     }
 
     string getCategory() const {
-        return this->category;
+        return category;
     }
 
     void setAmount(double amount) {
@@ -98,7 +98,7 @@ public:
         cout << "Expense added: " << amount << " for " << category << endl;
     }
 
-    void viewSummary() {
+    void viewSummary() const {
         double totalIncome = 0.0, totalExpenses = 0.0;
 
         for (const auto& income : incomes) {
@@ -166,3 +166,4 @@ int main() {
 
     return 0;
 }
+
