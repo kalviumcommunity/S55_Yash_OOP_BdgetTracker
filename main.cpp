@@ -29,16 +29,12 @@ public:
         return amount;
     }
 
+    virtual string getDetails() const {
+        return "Income from " + source + ": $" + to_string(amount);
+    }
+
     string getSource() const {
         return source;
-    }
-
-    void setAmount(double amount) {
-        this->amount = amount;
-    }
-
-    void setSource(string source) {
-        this->source = source;
     }
 
     static int getTotalIncomes() {
@@ -48,7 +44,6 @@ public:
 
 int Income::totalIncomes = 0;
 
-// Derived class demonstrating single inheritance
 class SalaryIncome : public Income {
 private:
     string employer;
@@ -64,6 +59,10 @@ public:
 
     string getEmployer() const {
         return employer;
+    }
+
+    string getDetails() const override {
+        return "Salary from " + employer + " via " + source + ": $" + to_string(amount);
     }
 };
 
@@ -92,16 +91,8 @@ public:
         return amount;
     }
 
-    string getCategory() const {
-        return category;
-    }
-
-    void setAmount(double amount) {
-        this->amount = amount;
-    }
-
-    void setCategory(string category) {
-        this->category = category;
+    virtual string getDetails() const {
+        return "Expense for " + category + ": $" + to_string(amount);
     }
 
     static int getTotalExpenses() {
@@ -111,7 +102,6 @@ public:
 
 int Expense::totalExpenses = 0;
 
-// Derived class demonstrating single inheritance
 class BusinessExpense : public Expense {
 private:
     string businessPurpose;
@@ -125,8 +115,8 @@ public:
         cout << "Destructor for BusinessExpense called. Business Purpose: " << businessPurpose << endl;
     }
 
-    string getBusinessPurpose() const {
-        return businessPurpose;
+    string getDetails() const override {
+        return "Business Expense for " + businessPurpose + " in category " + category + ": $" + to_string(amount);
     }
 };
 
@@ -142,12 +132,28 @@ public:
 
     void addIncome(Income* income) {
         incomes.emplace_back(income);
-        cout << "Income added: " << income->getAmount() << " from " << income->getSource() << endl;
+        cout << "Income added: " << income->getDetails() << endl;
+    }
+
+    void addIncome(double amount, string source) {
+        addIncome(new Income(amount, source));
+    }
+
+    void addIncome(double amount, string source, string employer) {
+        addIncome(new SalaryIncome(amount, source, employer));
     }
 
     void addExpense(Expense* expense) {
         expenses.emplace_back(expense);
-        cout << "Expense added: " << expense->getAmount() << " for " << expense->getCategory() << endl;
+        cout << "Expense added: " << expense->getDetails() << endl;
+    }
+
+    void addExpense(double amount, string category) {
+        addExpense(new Expense(amount, category));
+    }
+
+    void addExpense(double amount, string category, string businessPurpose) {
+        addExpense(new BusinessExpense(amount, category, businessPurpose));
     }
 
     void viewSummary() const {
@@ -195,7 +201,7 @@ int main() {
         cout << "Enter type of income (1 - Generic Income, 2 - Salary Income): ";
         while (true) {
             cin >> incomeType;
-            if (incomeType == 1 || incomeType == 2) break; // Valid input
+            if (incomeType == 1 || incomeType == 2) break;
             cout << "Invalid input. Enter type of income (1 - Generic Income, 2 - Salary Income): ";
         }
 
@@ -206,13 +212,11 @@ int main() {
         getline(cin, source);
 
         if (incomeType == 2) {
-            // Input specific for SalaryIncome
             cout << "Enter employer name: ";
             getline(cin, employer);
-            tracker->addIncome(new SalaryIncome(amount, source, employer));
+            tracker->addIncome(amount, source, employer);
         } else {
-            // Generic Income
-            tracker->addIncome(new Income(amount, source));
+            tracker->addIncome(amount, source);
         }
     }
 
@@ -228,7 +232,7 @@ int main() {
         cout << "Enter type of expense (1 - Generic Expense, 2 - Business Expense): ";
         while (true) {
             cin >> expenseType;
-            if (expenseType == 1 || expenseType == 2) break; // Valid input
+            if (expenseType == 1 || expenseType == 2) break;
             cout << "Invalid input. Enter type of expense (1 - Generic Expense, 2 - Business Expense): ";
         }
 
@@ -239,19 +243,16 @@ int main() {
         getline(cin, category);
 
         if (expenseType == 2) {
-            // Input specific for BusinessExpense
             cout << "Enter business purpose: ";
             getline(cin, businessPurpose);
-            tracker->addExpense(new BusinessExpense(amount, category, businessPurpose));
+            tracker->addExpense(amount, category, businessPurpose);
         } else {
-            // Generic Expense
-            tracker->addExpense(new Expense(amount, category));
+            tracker->addExpense(amount, category);
         }
     }
 
     tracker->viewSummary();
 
     delete tracker;
-
     return 0;
 }
