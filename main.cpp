@@ -4,6 +4,7 @@
 
 using namespace std;
 
+// Abstract class Income
 class Income {
 protected:
     double amount;
@@ -29,9 +30,8 @@ public:
         return amount;
     }
 
-    virtual string getDetails() const {
-        return "Income from " + source + ": $" + to_string(amount);
-    }
+    // Pure virtual function makes this an abstract class
+    virtual string getDetails() const = 0;
 
     string getSource() const {
         return source;
@@ -66,6 +66,7 @@ public:
     }
 };
 
+// Abstract class Expense
 class Expense {
 protected:
     double amount;
@@ -91,9 +92,8 @@ public:
         return amount;
     }
 
-    virtual string getDetails() const {
-        return "Expense for " + category + ": $" + to_string(amount);
-    }
+    // Pure virtual function makes this an abstract class
+    virtual string getDetails() const = 0;
 
     static int getTotalExpenses() {
         return totalExpenses;
@@ -135,10 +135,7 @@ public:
         cout << "Income added: " << income->getDetails() << endl;
     }
 
-    void addIncome(double amount, string source) {
-        addIncome(new Income(amount, source));
-    }
-
+    // Removed the direct instantiation of Income
     void addIncome(double amount, string source, string employer) {
         addIncome(new SalaryIncome(amount, source, employer));
     }
@@ -148,10 +145,7 @@ public:
         cout << "Expense added: " << expense->getDetails() << endl;
     }
 
-    void addExpense(double amount, string category) {
-        addExpense(new Expense(amount, category));
-    }
-
+    // Removed the direct instantiation of Expense
     void addExpense(double amount, string category, string businessPurpose) {
         addExpense(new BusinessExpense(amount, category, businessPurpose));
     }
@@ -194,16 +188,8 @@ int main() {
     cin >> incomeCount;
 
     for (int i = 0; i < incomeCount; i++) {
-        int incomeType;
         double amount;
         string source, employer;
-        
-        cout << "Enter type of income (1 - Generic Income, 2 - Salary Income): ";
-        while (true) {
-            cin >> incomeType;
-            if (incomeType == 1 || incomeType == 2) break;
-            cout << "Invalid input. Enter type of income (1 - Generic Income, 2 - Salary Income): ";
-        }
 
         cout << "Enter income amount: ";
         cin >> amount;
@@ -211,13 +197,9 @@ int main() {
         cin >> ws;
         getline(cin, source);
 
-        if (incomeType == 2) {
-            cout << "Enter employer name: ";
-            getline(cin, employer);
-            tracker->addIncome(amount, source, employer);
-        } else {
-            tracker->addIncome(amount, source);
-        }
+        cout << "Enter employer name: ";
+        getline(cin, employer);
+        tracker->addIncome(amount, source, employer);
     }
 
     int expenseCount;
@@ -225,16 +207,8 @@ int main() {
     cin >> expenseCount;
 
     for (int i = 0; i < expenseCount; i++) {
-        int expenseType;
         double amount;
         string category, businessPurpose;
-
-        cout << "Enter type of expense (1 - Generic Expense, 2 - Business Expense): ";
-        while (true) {
-            cin >> expenseType;
-            if (expenseType == 1 || expenseType == 2) break;
-            cout << "Invalid input. Enter type of expense (1 - Generic Expense, 2 - Business Expense): ";
-        }
 
         cout << "Enter expense amount: ";
         cin >> amount;
@@ -242,13 +216,9 @@ int main() {
         cin >> ws;
         getline(cin, category);
 
-        if (expenseType == 2) {
-            cout << "Enter business purpose: ";
-            getline(cin, businessPurpose);
-            tracker->addExpense(amount, category, businessPurpose);
-        } else {
-            tracker->addExpense(amount, category);
-        }
+        cout << "Enter business purpose: ";
+        getline(cin, businessPurpose);
+        tracker->addExpense(amount, category, businessPurpose);
     }
 
     tracker->viewSummary();
