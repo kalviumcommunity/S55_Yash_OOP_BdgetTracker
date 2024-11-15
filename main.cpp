@@ -4,101 +4,74 @@
 
 using namespace std;
 
-class Income {
-private:
+class Transaction {
+protected:
     double amount;
-    string source;
+    string description;
+
+public:
+    Transaction(double amt, string desc) : amount(amt), description(desc) {}
+    virtual ~Transaction() { cout << "Destructor for Transaction called: " << description << endl; }
+
+    double getAmount() const { return amount; }
+    string getDescription() const { return description; }
+
+    virtual void display() const = 0;
+};
+
+class Income : public Transaction {
+private:
     static int totalIncomes;
 
 public:
-    Income() : amount(0), source("") {
+    Income(double amount, string source) : Transaction(amount, source) {
         totalIncomes++;
-        cout << "Default Constructor for Income called" << endl;
+        cout << "Income Created: " << description << endl;
     }
 
-    Income(double amount, string source) : amount(amount), source(source) {
-        totalIncomes++;
-        cout << "Parameterized Constructor for Income called" << endl;
+    ~Income() override {
+        cout << "Income Destructor called. Source: " << description << endl;
     }
 
-    ~Income() {
-        cout << "Destructor for Income called. Source: " << source << endl;
+    void display() const override {
+        cout << "Income from " << description << ": " << amount << endl;
     }
 
-    double getAmount() const {
-        return amount;
-    }
-
-    string getSource() const {
-        return source;
-    }
-
-    void setAmount(double amount) {
-        this->amount = amount;
-    }
-
-    void setSource(string source) {
-        this->source = source;
-    }
-
-    static int getTotalIncomes() {
-        return totalIncomes;
-    }
+    static int getTotalIncomes() { return totalIncomes; }
 };
 
 int Income::totalIncomes = 0;
 
-class Expense {
+class Expense : public Transaction {
 private:
-    double amount;
-    string category;
     static int totalExpenses;
 
 public:
-    Expense() : amount(0), category("") {
+    Expense(double amount, string category) : Transaction(amount, category) {
         totalExpenses++;
-        cout << "Default Constructor for Expense called" << endl;
+        cout << "Expense Created: " << description << endl;
     }
 
-    Expense(double amount, string category) : amount(amount), category(category) {
-        totalExpenses++;
-        cout << "Parameterized Constructor for Expense called" << endl;
+    ~Expense() override {
+        cout << "Expense Destructor called. Category: " << description << endl;
     }
 
-    ~Expense() {
-        cout << "Destructor for Expense called. Category: " << category << endl;
+    void display() const override {
+        cout << "Expense for " << description << ": " << amount << endl;
     }
 
-    double getAmount() const {
-        return amount;
-    }
-
-    string getCategory() const {
-        return category;
-    }
-
-    void setAmount(double amount) {
-        this->amount = amount;
-    }
-
-    void setCategory(string category) {
-        this->category = category;
-    }
-
-    static int getTotalExpenses() {
-        return totalExpenses;
-    }
+    static int getTotalExpenses() { return totalExpenses; }
 };
 
 int Expense::totalExpenses = 0;
 
-class BudgetTracker {
+class BudgetTracker : public Income, public Expense {
 private:
     vector<Income*> incomes;
     vector<Expense*> expenses;
 
 public:
-    BudgetTracker() {
+    BudgetTracker() : Income(0, ""), Expense(0, "") {
         cout << "BudgetTracker created" << endl;
     }
 
@@ -117,15 +90,16 @@ public:
     void viewSummary() const {
         double totalIncome = 0.0, totalExpenses = 0.0;
 
+        cout << "\n--- Financial Summary ---" << endl;
         for (const auto& income : incomes) {
             totalIncome += income->getAmount();
+            income->display();
         }
-
         for (const auto& expense : expenses) {
             totalExpenses += expense->getAmount();
+            expense->display();
         }
 
-        cout << "\n--- Financial Summary ---" << endl;
         cout << "Total Income: " << totalIncome << endl;
         cout << "Total Expenses: " << totalExpenses << endl;
         cout << "Remaining Balance: " << (totalIncome - totalExpenses) << endl;
@@ -134,18 +108,14 @@ public:
     }
 
     ~BudgetTracker() {
-        for (auto income : incomes) {
-            delete income;
-        }
-        for (auto expense : expenses) {
-            delete expense;
-        }
+        for (auto income : incomes) delete income;
+        for (auto expense : expenses) delete expense;
         cout << "BudgetTracker destroyed" << endl;
     }
 };
 
 int main() {
-    BudgetTracker* tracker = new BudgetTracker();
+    BudgetTracker tracker;
 
     int incomeCount;
     cout << "How many incomes would you like to enter? ";
@@ -159,7 +129,7 @@ int main() {
         cout << "Enter income source for income " << (i + 1) << ": ";
         cin >> ws;
         getline(cin, source);
-        tracker->addIncome(amount, source);
+        tracker.addIncome(amount, source);
     }
 
     int expenseCount;
@@ -174,12 +144,10 @@ int main() {
         cout << "Enter expense category for expense " << (i + 1) << ": ";
         cin >> ws;
         getline(cin, category);
-        tracker->addExpense(amount, category);
+        tracker.addExpense(amount, category);
     }
 
-    tracker->viewSummary();
-
-    delete tracker;
+    tracker.viewSummary();
 
     return 0;
 }
