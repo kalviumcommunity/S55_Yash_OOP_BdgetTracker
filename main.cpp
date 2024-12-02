@@ -1,10 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory> // For smart pointers
 
 using namespace std;
 
-// Abstract class Income
+// Abstract class Income (Base class, open for extension)
 class Income {
 protected:
     double amount;
@@ -24,7 +25,7 @@ public:
         return amount;
     }
 
-    virtual string getDetails() const = 0;
+    virtual string getDetails() const = 0; // Pure virtual function
 
     static int getTotalIncomes() {
         return totalIncomes;
@@ -33,6 +34,7 @@ public:
 
 int Income::totalIncomes = 0;
 
+// Derived class SalaryIncome (Extends Income)
 class SalaryIncome : public Income {
 private:
     string employer;
@@ -46,7 +48,21 @@ public:
     }
 };
 
-// Abstract class Expense
+// Derived class InvestmentIncome (Extends Income)
+class InvestmentIncome : public Income {
+private:
+    string investmentType;
+
+public:
+    InvestmentIncome(double amount, string source, string investmentType)
+        : Income(amount, source), investmentType(investmentType) {}
+
+    string getDetails() const override {
+        return "Investment income from " + investmentType + " via " + source + ": $" + to_string(amount);
+    }
+};
+
+// Abstract class Expense (Base class, open for extension)
 class Expense {
 protected:
     double amount;
@@ -66,7 +82,7 @@ public:
         return amount;
     }
 
-    virtual string getDetails() const = 0;
+    virtual string getDetails() const = 0; // Pure virtual function
 
     static int getTotalExpenses() {
         return totalExpenses;
@@ -75,6 +91,7 @@ public:
 
 int Expense::totalExpenses = 0;
 
+// Derived class BusinessExpense (Extends Expense)
 class BusinessExpense : public Expense {
 private:
     string businessPurpose;
@@ -88,20 +105,28 @@ public:
     }
 };
 
+// Derived class PersonalExpense (Extends Expense)
+class PersonalExpense : public Expense {
+private:
+    string description;
+
+public:
+    PersonalExpense(double amount, string category, string description)
+        : Expense(amount, category), description(description) {}
+
+    string getDetails() const override {
+        return "Personal Expense for " + description + " in category " + category + ": $" + to_string(amount);
+    }
+};
+
 // Manages a collection of Income objects
 class IncomeManager {
 private:
-    vector<Income*> incomes;
+    vector<unique_ptr<Income>> incomes;
 
 public:
-    ~IncomeManager() {
-        for (auto income : incomes) {
-            delete income;
-        }
-    }
-
-    void addIncome(Income* income) {
-        incomes.push_back(income);
+    void addIncome(unique_ptr<Income> income) {
+        incomes.push_back(move(income));
     }
 
     double getTotalIncome() const {
@@ -111,22 +136,23 @@ public:
         }
         return total;
     }
+
+    void showIncomeDetails() const {
+        cout << "\n--- Income Details ---\n";
+        for (const auto& income : incomes) {
+            cout << income->getDetails() << endl;
+        }
+    }
 };
 
 // Manages a collection of Expense objects
 class ExpenseManager {
 private:
-    vector<Expense*> expenses;
+    vector<unique_ptr<Expense>> expenses;
 
 public:
-    ~ExpenseManager() {
-        for (auto expense : expenses) {
-            delete expense;
-        }
-    }
-
-    void addExpense(Expense* expense) {
-        expenses.push_back(expense);
+    void addExpense(unique_ptr<Expense> expense) {
+        expenses.push_back(move(expense));
     }
 
     double getTotalExpenses() const {
@@ -135,6 +161,13 @@ public:
             total += expense->getAmount();
         }
         return total;
+    }
+
+    void showExpenseDetails() const {
+        cout << "\n--- Expense Details ---\n";
+        for (const auto& expense : expenses) {
+            cout << expense->getDetails() << endl;
+        }
     }
 };
 
@@ -145,70 +178,101 @@ private:
     ExpenseManager expenseManager;
 
 public:
-    void addIncome(double amount, string source, string employer) {
-        incomeManager.addIncome(new SalaryIncome(amount, source, employer));
+    void addIncome() {
+        int choice;
+        double amount;
+        string source, employer, investmentType;
+
+        cout << "\nSelect Income Type:\n1. Salary Income\n2. Investment Income\nChoice: ";
+        cin >> choice;
+
+        cout << "Enter income amount: ";
+        cin >> amount;
+        cout << "Enter income source: ";
+        cin.ignore();
+        getline(cin, source);
+
+        if (choice == 1) {
+            cout << "Enter employer name: ";
+            getline(cin, employer);
+            incomeManager.addIncome(make_unique<SalaryIncome>(amount, source, employer));
+        } else if (choice == 2) {
+            cout << "Enter investment type: ";
+            getline(cin, investmentType);
+            incomeManager.addIncome(make_unique<InvestmentIncome>(amount, source, investmentType));
+        } else {
+            cout << "Invalid choice!\n";
+        }
     }
 
-    void addExpense(double amount, string category, string businessPurpose) {
-        expenseManager.addExpense(new BusinessExpense(amount, category, businessPurpose));
+    void addExpense() {
+        int choice;
+        double amount;
+        string category, businessPurpose, description;
+
+        cout << "\nSelect Expense Type:\n1. Business Expense\n2. Personal Expense\nChoice: ";
+        cin >> choice;
+
+        cout << "Enter expense amount: ";
+        cin >> amount;
+        cout << "Enter expense category: ";
+        cin.ignore();
+        getline(cin, category);
+
+        if (choice == 1) {
+            cout << "Enter business purpose: ";
+            getline(cin, businessPurpose);
+            expenseManager.addExpense(make_unique<BusinessExpense>(amount, category, businessPurpose));
+        } else if (choice == 2) {
+            cout << "Enter expense description: ";
+            getline(cin, description);
+            expenseManager.addExpense(make_unique<PersonalExpense>(amount, category, description));
+        } else {
+            cout << "Invalid choice!\n";
+        }
     }
 
     void viewSummary() const {
         double totalIncome = incomeManager.getTotalIncome();
         double totalExpenses = expenseManager.getTotalExpenses();
 
+        incomeManager.showIncomeDetails();
+        expenseManager.showExpenseDetails();
+
         cout << "\n--- Financial Summary ---" << endl;
         cout << "Total Income: $" << totalIncome << endl;
         cout << "Total Expenses: $" << totalExpenses << endl;
         cout << "Remaining Balance: $" << (totalIncome - totalExpenses) << endl;
-        cout << "Total Incomes Recorded: " << Income::getTotalIncomes() << endl;
-        cout << "Total Expenses Recorded: " << Expense::getTotalExpenses() << endl;
     }
 };
 
 // Main function for user interaction
 int main() {
     BudgetTracker tracker;
+    int choice;
 
-    int incomeCount;
-    cout << "How many incomes would you like to enter? ";
-    cin >> incomeCount;
+    do {
+        cout << "\n--- Budget Tracker Menu ---\n";
+        cout << "1. Add Income\n2. Add Expense\n3. View Summary\n4. Exit\nChoice: ";
+        cin >> choice;
 
-    for (int i = 0; i < incomeCount; i++) {
-        double amount;
-        string source, employer;
-
-        cout << "Enter income amount: ";
-        cin >> amount;
-        cout << "Enter income source: ";
-        cin >> ws;
-        getline(cin, source);
-
-        cout << "Enter employer name: ";
-        getline(cin, employer);
-        tracker.addIncome(amount, source, employer);
-    }
-
-    int expenseCount;
-    cout << "How many expenses would you like to enter? ";
-    cin >> expenseCount;
-
-    for (int i = 0; i < expenseCount; i++) {
-        double amount;
-        string category, businessPurpose;
-
-        cout << "Enter expense amount: ";
-        cin >> amount;
-        cout << "Enter expense category: ";
-        cin >> ws;
-        getline(cin, category);
-
-        cout << "Enter business purpose: ";
-        getline(cin, businessPurpose);
-        tracker.addExpense(amount, category, businessPurpose);
-    }
-
-    tracker.viewSummary();
+        switch (choice) {
+        case 1:
+            tracker.addIncome();
+            break;
+        case 2:
+            tracker.addExpense();
+            break;
+        case 3:
+            tracker.viewSummary();
+            break;
+        case 4:
+            cout << "Exiting Budget Tracker.\n";
+            break;
+        default:
+            cout << "Invalid choice. Please try again.\n";
+        }
+    } while (choice != 4);
 
     return 0;
 }
