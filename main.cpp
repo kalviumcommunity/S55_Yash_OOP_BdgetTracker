@@ -10,29 +10,18 @@ class Income {
 protected:
     double amount;
     string source;
-    static int totalIncomes;
 
 public:
-    Income(double amount, string source) : amount(amount), source(source) {
-        totalIncomes++;
-    }
+    Income(double amount, string source) : amount(amount), source(source) {}
 
-    virtual ~Income() {
-        totalIncomes--;
-    }
+    virtual ~Income() = default;
 
     virtual double getAmount() const {
         return amount;
     }
 
     virtual string getDetails() const = 0; // Pure virtual function
-
-    static int getTotalIncomes() {
-        return totalIncomes;
-    }
 };
-
-int Income::totalIncomes = 0;
 
 // Derived class SalaryIncome (Extends Income)
 class SalaryIncome : public Income {
@@ -67,29 +56,18 @@ class Expense {
 protected:
     double amount;
     string category;
-    static int totalExpenses;
 
 public:
-    Expense(double amount, string category) : amount(amount), category(category) {
-        totalExpenses++;
-    }
+    Expense(double amount, string category) : amount(amount), category(category) {}
 
-    virtual ~Expense() {
-        totalExpenses--;
-    }
+    virtual ~Expense() = default;
 
     virtual double getAmount() const {
         return amount;
     }
 
     virtual string getDetails() const = 0; // Pure virtual function
-
-    static int getTotalExpenses() {
-        return totalExpenses;
-    }
 };
-
-int Expense::totalExpenses = 0;
 
 // Derived class BusinessExpense (Extends Expense)
 class BusinessExpense : public Expense {
@@ -122,11 +100,11 @@ public:
 // Manages a collection of Income objects
 class IncomeManager {
 private:
-    vector<unique_ptr<Income>> incomes;
+    vector<shared_ptr<Income>> incomes;
 
 public:
-    void addIncome(unique_ptr<Income> income) {
-        incomes.push_back(move(income));
+    void addIncome(shared_ptr<Income> income) {
+        incomes.push_back(income);
     }
 
     double getTotalIncome() const {
@@ -148,11 +126,11 @@ public:
 // Manages a collection of Expense objects
 class ExpenseManager {
 private:
-    vector<unique_ptr<Expense>> expenses;
+    vector<shared_ptr<Expense>> expenses;
 
 public:
-    void addExpense(unique_ptr<Expense> expense) {
-        expenses.push_back(move(expense));
+    void addExpense(shared_ptr<Expense> expense) {
+        expenses.push_back(expense);
     }
 
     double getTotalExpenses() const {
@@ -195,11 +173,11 @@ public:
         if (choice == 1) {
             cout << "Enter employer name: ";
             getline(cin, employer);
-            incomeManager.addIncome(make_unique<SalaryIncome>(amount, source, employer));
+            incomeManager.addIncome(make_shared<SalaryIncome>(amount, source, employer));
         } else if (choice == 2) {
             cout << "Enter investment type: ";
             getline(cin, investmentType);
-            incomeManager.addIncome(make_unique<InvestmentIncome>(amount, source, investmentType));
+            incomeManager.addIncome(make_shared<InvestmentIncome>(amount, source, investmentType));
         } else {
             cout << "Invalid choice!\n";
         }
@@ -222,22 +200,22 @@ public:
         if (choice == 1) {
             cout << "Enter business purpose: ";
             getline(cin, businessPurpose);
-            expenseManager.addExpense(make_unique<BusinessExpense>(amount, category, businessPurpose));
+            expenseManager.addExpense(make_shared<BusinessExpense>(amount, category, businessPurpose));
         } else if (choice == 2) {
             cout << "Enter expense description: ";
             getline(cin, description);
-            expenseManager.addExpense(make_unique<PersonalExpense>(amount, category, description));
+            expenseManager.addExpense(make_shared<PersonalExpense>(amount, category, description));
         } else {
             cout << "Invalid choice!\n";
         }
     }
 
     void viewSummary() const {
-        double totalIncome = incomeManager.getTotalIncome();
-        double totalExpenses = expenseManager.getTotalExpenses();
-
         incomeManager.showIncomeDetails();
         expenseManager.showExpenseDetails();
+
+        double totalIncome = incomeManager.getTotalIncome();
+        double totalExpenses = expenseManager.getTotalExpenses();
 
         cout << "\n--- Financial Summary ---" << endl;
         cout << "Total Income: $" << totalIncome << endl;
