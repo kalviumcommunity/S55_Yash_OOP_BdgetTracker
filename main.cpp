@@ -12,30 +12,19 @@ protected:
     static int totalIncomes;
 
 public:
-    Income() : amount(0), source("") {
-        totalIncomes++;
-        cout << "Default Constructor for Income called" << endl;
-    }
-
     Income(double amount, string source) : amount(amount), source(source) {
         totalIncomes++;
-        cout << "Parameterized Constructor for Income called" << endl;
     }
 
     virtual ~Income() {
-        cout << "Destructor for Income called. Source: " << source << endl;
+        totalIncomes--;
     }
 
     virtual double getAmount() const {
         return amount;
     }
 
-    // Pure virtual function makes this an abstract class
     virtual string getDetails() const = 0;
-
-    string getSource() const {
-        return source;
-    }
 
     static int getTotalIncomes() {
         return totalIncomes;
@@ -49,17 +38,8 @@ private:
     string employer;
 
 public:
-    SalaryIncome(double amount, string source, string employer) : Income(amount, source), employer(employer) {
-        cout << "SalaryIncome Constructor called" << endl;
-    }
-
-    ~SalaryIncome() {
-        cout << "Destructor for SalaryIncome called. Employer: " << employer << endl;
-    }
-
-    string getEmployer() const {
-        return employer;
-    }
+    SalaryIncome(double amount, string source, string employer)
+        : Income(amount, source), employer(employer) {}
 
     string getDetails() const override {
         return "Salary from " + employer + " via " + source + ": $" + to_string(amount);
@@ -74,25 +54,18 @@ protected:
     static int totalExpenses;
 
 public:
-    Expense() : amount(0), category("") {
-        totalExpenses++;
-        cout << "Default Constructor for Expense called" << endl;
-    }
-
     Expense(double amount, string category) : amount(amount), category(category) {
         totalExpenses++;
-        cout << "Parameterized Constructor for Expense called" << endl;
     }
 
     virtual ~Expense() {
-        cout << "Destructor for Expense called. Category: " << category << endl;
+        totalExpenses--;
     }
 
     virtual double getAmount() const {
         return amount;
     }
 
-    // Pure virtual function makes this an abstract class
     virtual string getDetails() const = 0;
 
     static int getTotalExpenses() {
@@ -107,81 +80,95 @@ private:
     string businessPurpose;
 
 public:
-    BusinessExpense(double amount, string category, string businessPurpose) : Expense(amount, category), businessPurpose(businessPurpose) {
-        cout << "BusinessExpense Constructor called" << endl;
-    }
-
-    ~BusinessExpense() {
-        cout << "Destructor for BusinessExpense called. Business Purpose: " << businessPurpose << endl;
-    }
+    BusinessExpense(double amount, string category, string businessPurpose)
+        : Expense(amount, category), businessPurpose(businessPurpose) {}
 
     string getDetails() const override {
         return "Business Expense for " + businessPurpose + " in category " + category + ": $" + to_string(amount);
     }
 };
 
-class BudgetTracker {
+// Manages a collection of Income objects
+class IncomeManager {
 private:
     vector<Income*> incomes;
-    vector<Expense*> expenses;
 
 public:
-    BudgetTracker() {
-        cout << "BudgetTracker created" << endl;
-    }
-
-    void addIncome(Income* income) {
-        incomes.emplace_back(income);
-        cout << "Income added: " << income->getDetails() << endl;
-    }
-
-    // Removed the direct instantiation of Income
-    void addIncome(double amount, string source, string employer) {
-        addIncome(new SalaryIncome(amount, source, employer));
-    }
-
-    void addExpense(Expense* expense) {
-        expenses.emplace_back(expense);
-        cout << "Expense added: " << expense->getDetails() << endl;
-    }
-
-    // Removed the direct instantiation of Expense
-    void addExpense(double amount, string category, string businessPurpose) {
-        addExpense(new BusinessExpense(amount, category, businessPurpose));
-    }
-
-    void viewSummary() const {
-        double totalIncome = 0.0, totalExpenses = 0.0;
-
-        for (const auto& income : incomes) {
-            totalIncome += income->getAmount();
-        }
-
-        for (const auto& expense : expenses) {
-            totalExpenses += expense->getAmount();
-        }
-
-        cout << "\n--- Financial Summary ---" << endl;
-        cout << "Total Income: " << totalIncome << endl;
-        cout << "Total Expenses: " << totalExpenses << endl;
-        cout << "Remaining Balance: " << (totalIncome - totalExpenses) << endl;
-        cout << "Total Incomes Recorded: " << Income::getTotalIncomes() << endl;
-        cout << "Total Expenses Recorded: " << Expense::getTotalExpenses() << endl;
-    }
-
-    ~BudgetTracker() {
+    ~IncomeManager() {
         for (auto income : incomes) {
             delete income;
         }
-        for (auto expense : expenses) {
-            delete expense;
+    }
+
+    void addIncome(Income* income) {
+        incomes.push_back(income);
+    }
+
+    double getTotalIncome() const {
+        double total = 0.0;
+        for (const auto& income : incomes) {
+            total += income->getAmount();
         }
-        cout << "BudgetTracker destroyed" << endl;
+        return total;
     }
 };
 
+// Manages a collection of Expense objects
+class ExpenseManager {
+private:
+    vector<Expense*> expenses;
+
+public:
+    ~ExpenseManager() {
+        for (auto expense : expenses) {
+            delete expense;
+        }
+    }
+
+    void addExpense(Expense* expense) {
+        expenses.push_back(expense);
+    }
+
+    double getTotalExpenses() const {
+        double total = 0.0;
+        for (const auto& expense : expenses) {
+            total += expense->getAmount();
+        }
+        return total;
+    }
+};
+
+// Manages the overall budget using IncomeManager and ExpenseManager
+class BudgetTracker {
+private:
+    IncomeManager incomeManager;
+    ExpenseManager expenseManager;
+
+public:
+    void addIncome(double amount, string source, string employer) {
+        incomeManager.addIncome(new SalaryIncome(amount, source, employer));
+    }
+
+    void addExpense(double amount, string category, string businessPurpose) {
+        expenseManager.addExpense(new BusinessExpense(amount, category, businessPurpose));
+    }
+
+    void viewSummary() const {
+        double totalIncome = incomeManager.getTotalIncome();
+        double totalExpenses = expenseManager.getTotalExpenses();
+
+        cout << "\n--- Financial Summary ---" << endl;
+        cout << "Total Income: $" << totalIncome << endl;
+        cout << "Total Expenses: $" << totalExpenses << endl;
+        cout << "Remaining Balance: $" << (totalIncome - totalExpenses) << endl;
+        cout << "Total Incomes Recorded: " << Income::getTotalIncomes() << endl;
+        cout << "Total Expenses Recorded: " << Expense::getTotalExpenses() << endl;
+    }
+};
+
+// Main function for user interaction
 int main() {
-    BudgetTracker* tracker = new BudgetTracker();
+    BudgetTracker tracker;
 
     int incomeCount;
     cout << "How many incomes would you like to enter? ";
@@ -199,7 +186,7 @@ int main() {
 
         cout << "Enter employer name: ";
         getline(cin, employer);
-        tracker->addIncome(amount, source, employer);
+        tracker.addIncome(amount, source, employer);
     }
 
     int expenseCount;
@@ -218,11 +205,10 @@ int main() {
 
         cout << "Enter business purpose: ";
         getline(cin, businessPurpose);
-        tracker->addExpense(amount, category, businessPurpose);
+        tracker.addExpense(amount, category, businessPurpose);
     }
 
-    tracker->viewSummary();
+    tracker.viewSummary();
 
-    delete tracker;
     return 0;
 }
